@@ -1,0 +1,22 @@
+.card
+{
+    background-color: #1D3340;
+    border-radius: 25px;
+    padding: 20px;
+    width: fit-content;
+    margin-top: 40px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+.card-title
+{
+    border-bottom: 2px solid #ffffff24;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.card-title img
+{
+    filter: drop-shadow(0px 6px 2px rgba(0, 4, 4, 0.25));
+}
