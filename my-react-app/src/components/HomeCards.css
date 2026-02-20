@@ -4,3 +4,46 @@
     grid-template-columns: auto auto;
     margin-left: 20px;
 }
+
+.controls-buttons
+{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.controls-buttons button
+{
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    padding: 12px 30px;
+    border-radius: 10px;
+}
+
+.search-buttons
+{
+    display: flex;
+    gap: 12px;
+}
+
+.start-search
+{
+    background-color: #519848;
+}
+
+.stop-search
+{
+    background-color: #8D3039;
+}
+
+.return-dock
+{
+    background-color: #5595DE;
+}
+
+.info-widget
+{
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    padding: 12px 30px;
+    border-radius: 10px;
+    background-color: #264151;
+}

@@ -11,9 +11,25 @@ const HomeCards = () => {
   return (
     <div className='cards-container'>
         <Card title='Controls' icon={ Joystick } alt='Joystick Icon'>
-            <p>
-            The body will be in here....and there and filling up this square
-            </p>
+            <div className='controls-buttons'>
+                <div className='search-buttons'>
+                    <button className='start-search'> Start Search </button>
+                    <button className='stop-search'> Stop Search </button>
+                </div>
+
+                <button className='return-dock'> Return to Dock </button>
+
+                <div className='info-widget'>
+                    <span className='info-label'> Elapsed Time: </span>
+                    <span className='info-value'> --:-- </span>
+                </div>
+
+                <div className='info-widget'>
+                    <span className='info-label'> ETA Completion: </span>
+                    <span className='info-value'> --:-- </span>
+                </div>
+            </div>
+
         </Card>
         <Card title='Live Feed' icon={ Videocall } alt='Videocall Icon'>
             <p>
