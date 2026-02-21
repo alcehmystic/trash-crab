@@ -20,9 +20,9 @@ const ProgressMeter = ({ color = '#183A49', progress = 0, height = 20 }) => { //
   const progressPercentage = {
     color: '#102833',
     fontWeight: 20,
-    padding: '125px',
-    fontSize: 11,
-    verticalAlign: 'text-top'
+    padding: '128px',
+    fontSize: 15,
+    verticalAlign: 'top'
   }
 
   return (
