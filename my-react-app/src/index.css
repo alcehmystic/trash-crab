@@ -1,20 +1,13 @@
-html, body, #root {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-
-  background-color: #0B1F2A;
-  color: rgba(255, 255, 255, 0.87);
-
-  font-family: 'Jaro', sans-serif;
-}
-
 :root {
-  --bg-main: #0B1F2A;
-  --text-main: rgba(255, 255, 255, 0.87);
-
+  font-family: 'Jaro', sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
   line-height: 1.5;
   font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #0B1F2A;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
