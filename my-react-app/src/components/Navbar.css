@@ -1,7 +1,7 @@
 .navbar {
     display: flex;
     justify-content: space-between;
-    background-color: #192023;
+    background-color: rgba(25,32,35,0.6);
     color: #fff;
     padding: 10px 20px;
     width: 100vw;
@@ -28,4 +28,28 @@
     font-size: 1.8em;
     font-weight: bold;
     margin-right: 20px;
+}
+
+.navbar-icon {
+    display: block;
+    width: 120px;
+    height: auto;
+    margin-right: -20px;
+    margin-left: -40px;
+    padding-left: 20px;
+}
+
+.navbar-toggle {
+    background-color: #1D3340;
+    color: #fff;
+    height: 30px;
+    width: 100px;
+    border-radius: 20px;
+    text-align: center;
+    /*font-size: 1em;*/
+    cursor: pointer;
+}
+
+.navbar-toggle p{
+    padding-bottom: 20px;
 }

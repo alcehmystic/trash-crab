@@ -28,6 +28,7 @@
 .start-search
 {
     background-color: #519848;
+    color: #fff;
     border: none;
     transition: background-color 0.2s ease;
 }
@@ -40,6 +41,7 @@
 .stop-search
 {
     background-color: #8D3039;
+    color: #fff;
     border: none;
     transition: background-color 0.2s ease;
 }
@@ -52,6 +54,7 @@
 .return-dock
 {
     background-color: #5595DE;
+    color: #fff;
     border: none;
     transition: background-color 0.2s ease;
 }
