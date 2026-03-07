@@ -9,6 +9,7 @@ import Speed from '../assets/card_icons/Speed.png';
 import Water from '../assets/card_icons/Water.png';
 import Trash from '../assets/card_icons/Trash.png';
 import Address from '../assets/card_icons/Address.png';
+import StatusButton from './StatusButton.jsx';
 
 import ProgressMeter from './ProgressMeter.jsx'
 import './HomeCards.css';
@@ -18,7 +19,7 @@ import './HomeCards.css';
 const HomeCards = () => {
   return (
     <div className='cards-container'>
-        <Card title='Controls' icon={ Joystick } alt='Joystick Icon'>
+        <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton isOnline={false} />}>
             <div className='controls-widget'>
                 <div className='search-buttons'>
                     <button className='start-search'> Start Search </button>
@@ -39,9 +40,9 @@ const HomeCards = () => {
             </div>
 
         </Card>
-        <Card title='Live Feed' icon={ Videocall } alt='Videocall Icon'>
+        <Card title='Live Feed' icon={ Videocall } alt='Videocall Icon' statusButton={<StatusButton isOnline={false} />} >
             <p>
-            The body will be in here....and there and filling up this square
+            The body will be in here....and there and filling up this square.jhfjadhfjdhfljsdfhjsdfh.
             </p>
         </Card>
         <Card title='Live Stats' icon={ Live } alt='Live Icon'>

@@ -35,8 +35,8 @@
     width: 120px;
     height: auto;
     margin-right: -20px;
-    margin-left: -40px;
-    padding-left: 20px;
+    margin-left: -35px;
+    padding-left: 0px;
 }
 
 .navbar-toggle {
@@ -48,6 +48,13 @@
     text-align: center;
     /*font-size: 1em;*/
     cursor: pointer;
+}
+
+.settings-icon {
+    width: 30px;
+    height: auto;
+    cursor: pointer;
+    padding-right: 10px;
 }
 
 .navbar-toggle p{

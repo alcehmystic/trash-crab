@@ -1,6 +1,7 @@
 import React from 'react';
 import './Navbar.css';
 import icon from '../assets/card_icons/Logo_Crab.png';
+import settingsIcon from '../assets/card_icons/Setting_Logo.png';
 import StatusButton from "./StatusButton";
 
 function Navbar() {
@@ -12,7 +13,7 @@ function Navbar() {
         <StatusButton isOnline={false} />
       </div>
       <div className="navbar-right">
-        <button className="navbar-toggle">Settings</button>
+        <img src={settingsIcon} alt="Settings Icon" className="settings-icon" />
       </div>
     </nav>
   );
