@@ -10,9 +10,14 @@ import Water from '../assets/card_icons/Water.png';
 import Trash from '../assets/card_icons/Trash.png';
 import Address from '../assets/card_icons/Address.png';
 import StatusButton from './StatusButton.jsx';
+import Map from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
+
 
 import ProgressMeter from './ProgressMeter.jsx'
 import './HomeCards.css';
+
+
 
 
 
@@ -94,6 +99,19 @@ const HomeCards = () => {
             </div>
         </Card>
         <Card title='Map View' icon={ World } alt='World Icon'>
+            <div className='map-container'>
+                <Map       
+                    initialViewState={{
+                        longitude: -122.4,
+                        latitude: 37.8,
+                        zoom: 14
+                    }}  
+                    style={{ width: '100%', height: '100%' }}
+                    mapStyle='https://tiles.openfreemap.org/styles/bright'
+                />
+            </div>
+        </Card>
+        <Card title='Mission Log' icon={ Speed } alt='Speed Icon'>
             <p>
             The body will be in here....and there and filling up this square
             </p>

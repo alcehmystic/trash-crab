@@ -115,6 +115,14 @@
     grid-template-columns: 160px 1fr;
 }
 
+.map-container
+{
+    width: 884.77px;
+    height: 400px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
 
 
 
