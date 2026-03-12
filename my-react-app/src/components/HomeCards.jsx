@@ -13,13 +13,10 @@ import StatusButton from './StatusButton.jsx';
 import Map from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-
 import ProgressMeter from './ProgressMeter.jsx'
 import './HomeCards.css';
 
-
-
-
+import MapDisplay from './MapDisplay.jsx'
 
 const HomeCards = () => {
   return (
@@ -91,24 +88,14 @@ const HomeCards = () => {
                         <span className='info-label'> Progress Meter</span>
                         <div className='progress-bar'>
                             <ProgressMeter color='#183A49' progress={55} />  
-                        </div> 
-                       
+                        </div>    
                     </div>
                     
-
             </div>
         </Card>
         <Card title='Map View' icon={ World } alt='World Icon'>
             <div className='map-container'>
-                <Map       
-                    initialViewState={{
-                        longitude: -122.4,
-                        latitude: 37.8,
-                        zoom: 14
-                    }}  
-                    style={{ width: '100%', height: '100%' }}
-                    mapStyle='https://tiles.openfreemap.org/styles/bright'
-                />
+                <MapDisplay/>
             </div>
         </Card>
         <Card title='Mission Log' icon={ Speed } alt='Speed Icon'>
