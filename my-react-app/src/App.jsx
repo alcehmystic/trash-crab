@@ -7,9 +7,11 @@ import Card from './components/Card';
 import HomeCards from './components/HomeCards';
 
 function App() {
+  const [mode, changeMode] = useState(true)
+
   return (
-    <div>
-      <Navbar />
+    <div className='app-container' data-theme={ mode ? "dark" : "light" }>
+      <Navbar darkMode={ mode } setDarkMode={ changeMode }  />
       <HomeCards />
     </div>
   );
