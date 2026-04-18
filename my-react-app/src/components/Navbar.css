@@ -72,9 +72,10 @@
     position: absolute;
     background-color: #233d4dca;
     border-radius: 10px;
-    top: 60px;
-    transform: translateX(-25px);
-    padding: 6px 8px;
+    top: 55px;
+    transform: translateX(-112px);
+    padding: 10px 8px;
+    width: 190px;
 
 }
 
@@ -84,7 +85,6 @@
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    padding-right: 40px;
 }
 
 .display-toggle input
@@ -95,7 +95,7 @@
 .display-bar
 {
     position: relative;
-    width: 70px;
+    width: 60px;
     height: 30px;
     background-color: #1c4e6fa1;
     border-radius: 16px;
@@ -104,7 +104,7 @@
 
 .display-bar::before
 {
-    content: " ☀️";
+    content: "☀️";
     text-align: center;
     position: absolute;
     top: 3px;
@@ -119,11 +119,12 @@
 .display-toggle input:checked +.display-bar::before
 {
     content: "🌙";
-    transform: translateX(22px);
+    transform: translateX(29px);
 }
 
 .bar-label
 {
     font-size: 0.95rem;
+    margin-left: 20px;
 }
 
