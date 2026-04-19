@@ -74,4 +74,14 @@ button:focus-visible {
 [data-theme="light"]
 {
   --background-color: #6a95ac;
+  --card-color: #3A657C;
+  --navbar-color: #215067d0;
+  --navbar_setting-color: #3f6c85d3;
+}
+
+[data-theme="dark"]
+{
+  --navbar-color: #0a1b2598;
+  --card-color: #1D3340;
+  --navbar_setting-color: #233d4dca;
 }

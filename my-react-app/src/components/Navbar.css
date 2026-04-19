@@ -1,7 +1,7 @@
 .navbar {
     display: flex;
     justify-content: space-between;
-    background-color: #0a1b2598;
+    background-color: var(--navbar-color);
     color: var(--text-color);
     padding: 10px 20px;
     width: 100vw;
@@ -70,12 +70,12 @@
 
 .settings-menu{
     position: absolute;
-    background-color: #233d4dca;
+    background-color: var(--navbar_setting-color);
     border-radius: 10px;
     top: 55px;
     transform: translateX(-112px);
     padding: 10px 8px;
-    width: 190px;
+    width: 175px;
 
 }
 
@@ -124,7 +124,7 @@
 
 .bar-label
 {
-    font-size: 0.95rem;
+    font-size: 1rem;
     margin-left: 20px;
 }
 
