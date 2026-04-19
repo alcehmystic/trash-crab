@@ -69,6 +69,7 @@ button:focus-visible {
 .app-container
 {
   background-color: var(--background-color);
+  overflow: hidden;
 }
 
 [data-theme="light"]
