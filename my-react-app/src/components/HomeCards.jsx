@@ -44,7 +44,7 @@ const HomeCards = () => {
         </Card>
         <Card title='Live Feed' icon={ Videocall } alt='Videocall Icon' statusButton={<StatusButton isOnline={false} />} >
             <p>
-            The body will be in here....and there and filling up this square.jhfjadhfjdhfljsdfhjsdfh.
+                This body will later be replaced with the Trash Crab's live feed from the camera to show what it's collecting and seeing in its view.
             </p>
         </Card>
         <Card title='Live Stats' icon={ Live } alt='Live Icon'>
@@ -85,7 +85,7 @@ const HomeCards = () => {
                     </div>
 
                     <div className='progress-container'>
-                        <span className='info-label'> Progress Meter</span>
+                        <span className='info-label'> Progress Meter </span>
                         <div className='progress-bar'>
                             <ProgressMeter color='#183A49' progress={55} />  
                         </div>    
@@ -98,11 +98,7 @@ const HomeCards = () => {
                 <MapDisplay/>
             </div>
         </Card>
-        <Card title='Mission Log' icon={ Speed } alt='Speed Icon'>
-            <p>
-            The body will be in here....and there and filling up this square
-            </p>
-        </Card>
+        
     </div>
       
 

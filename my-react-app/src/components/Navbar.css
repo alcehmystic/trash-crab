@@ -5,7 +5,7 @@
     color: var(--text-color);
     padding: 10px 20px;
     width: 100vw;
-    height: 62px;
+    height: 50px;
     box-sizing: border-box;
 }
 
@@ -72,9 +72,9 @@
     position: absolute;
     background-color: var(--navbar_setting-color);
     border-radius: 10px;
-    top: 55px;
+    top: 45px;
     transform: translateX(-112px);
-    padding: 10px 8px;
+    padding: 10px 12px;
     width: 175px;
 
 }

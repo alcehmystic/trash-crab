@@ -2,8 +2,12 @@
 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    padding: 0 32px;
-    width: 100%;
+    gap: clamp(1rem, 1vw, 2rem); 
+
+    width: min(100%, 1500px);
+    margin: 0 auto;
+
+    padding: 0 clamp(1rem, 2vw, 2rem);
     box-sizing: border-box;
 }
 
@@ -69,7 +73,7 @@
 .info-container
 {
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-    padding: 12px 16px;
+    padding: 12px 12px;
     border-radius: 10px;
     background-color: #264151;
 
@@ -84,7 +88,7 @@
 .info-label
 {
     display: inline-flex;
-    align-items: center;  
+    align-items: center; 
 }
 
 .info-label img
@@ -107,7 +111,8 @@
     border-radius: 10px;
     background-color: #264151;
     display: grid;
-    grid-template-columns: 1fr 160px; /* Label + content*/
+    gap: 12px;
+    grid-template-columns: 1fr auto; /* Label + content*/
 }
 
 .progress-bar
