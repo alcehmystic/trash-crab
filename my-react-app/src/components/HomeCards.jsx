@@ -21,6 +21,38 @@ import MapDisplay from './MapDisplay.jsx'
 import { trashCrabData } from "../test/testData";
 
 const HomeCards = () => {
+
+const sendCommand = (command) => {
+        console.log("Sending command:", command);
+    }; 
+
+    useEffect(() => {
+        const handleDirectionChange = (event) => {
+            switch (event.key) {
+                case "w":
+                    sendCommand("move-forward");
+                    break;
+                case "s":
+                    sendCommand("move-backward");
+                    break;
+                case "a":
+                    sendCommand("turn-left");
+                    break;
+                case "d":
+                    sendCommand("turn-right");
+                    break;
+                default:
+                    break;
+            }
+        };
+        
+        window.addEventListener("keydown", handleDirectionChange);
+
+        return () => {
+            window.removeEventListener("keydown", handleDirectionChange);
+        };
+
+    }, []);
   return (
     <div className='cards-container'>
         <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton isOnline={false} />}>
