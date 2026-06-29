@@ -18,6 +18,8 @@ import './HomeCards.css';
 
 import MapDisplay from './MapDisplay.jsx'
 
+import { trashCrabData } from "../test/testData";
+
 const HomeCards = () => {
   return (
     <div className='cards-container'>
@@ -32,12 +34,12 @@ const HomeCards = () => {
 
                 <div className='info-container'>
                     <span className='info-label'> Elapsed Time: </span>
-                    <span className='info-value'> --:-- </span>
+                    <span className='info-value'> { trashCrabData.elapsedTime } </span>
                 </div>
 
                 <div className='info-container'>
                     <span className='info-label'> ETA Completion: </span>
-                    <span className='info-value'> --:-- </span>
+                    <span className='info-value'> { trashCrabData.etaCompletion } </span>
                 </div>
             </div>
 
@@ -53,41 +55,41 @@ const HomeCards = () => {
                         <span className='info-label'> 
                             <img src={ Battery } alt='Battery Icon' /> Battery
                         </span>
-                        <span className='info-value'> 99% </span>
+                        <span className='info-value'> { trashCrabData.battery } % </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'>
                             <img src={ Speed } alt='Speed Icon' /> Speed 
                         </span>
-                        <span className='info-value'> 0.1 m/s </span>
+                        <span className='info-value'> { trashCrabData.speed } m/s </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'> 
                             <img src={ Trash } alt='Trash Icon' /> Trash Collected 
                         </span>
-                        <span className='info-value'> 2 items </span>
+                        <span className='info-value'> { trashCrabData.trashCollected } items </span>
                     </div>
 
                     <div className='info-container'>
-                        <span className='info-label'> 
+                        <span className='info-label'>
                             <img src={ Water } alt='Water Icon' /> Water Tempuature
                         </span>
-                        <span className='info-value'> 29 F </span>
+                        <span className='info-value'> { trashCrabData.waterTemperature } F </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'> 
                             <img src={ Address } alt='GPS Icon' /> GPS
                         </span>
-                        <span className='info-value'> 1294, 1493 </span>
+                        <span className='info-value'> ( { trashCrabData.gps.latitude } , { trashCrabData.gps.longitude } ) </span>
                     </div>
 
                     <div className='progress-container'>
                         <span className='info-label'> Progress Meter </span>
                         <div className='progress-bar'>
-                            <ProgressMeter color='#183A49' progress={55} />  
+                            <ProgressMeter color='#183A49' progress={ trashCrabData.progressMeter } />  
                         </div>    
                     </div>
                     
