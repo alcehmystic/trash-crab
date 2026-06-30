@@ -1,5 +1,5 @@
-import Card from './Card'
-import React from 'react'
+import Card from './Card';
+import React, { useEffect, useState } from 'react';
 import Joystick from '../assets/card_icons/Joystick.png';
 import Videocall from '../assets/card_icons/Video_call.png';
 import Live from '../assets/card_icons/Live.png';
@@ -21,12 +21,46 @@ import MapDisplay from './MapDisplay.jsx'
 import { trashCrabData } from "../test/testData";
 
 const HomeCards = () => {
+    const [telemetry, setTelemetry] = useState({
+        elapsedTime: "00:00:00",
+        etaCompletion: "00:00:00",
+        battery: 0,
+        speed: 0,
+        trashCollected: 0,
+        waterTemperature: 0,
+        gps: {
+            latitude: 0,
+            longitude: 0
+        },
+        progressMeter: 0,
+        state: "NO DATA"
+    });
 
-const sendCommand = (command) => {
-        console.log("Sending command:", command);
+    const getTelemetry = async () => {
+        try{
+            const response = await fetch("http://localhost:5001/telemetry")
+            const data = await response.json();
+
+            setTelemetry(data);
+        }
+
+        catch(error){
+            console.error("Failed to get telemetry with error: ", error);
+        }
+    }
+ 
+    const sendCommand = (command) => {
+            console.log("Sending command:", command);
     }; 
 
     useEffect(() => {
+        getTelemetry();
+
+        // Start continuation of fetching telemetry every second
+        const interval = setInterval(() => {
+            getTelemetry();
+        }, 1000);
+    
         const handleDirectionChange = (event) => {
             switch (event.key) {
                 case "w":
@@ -49,6 +83,7 @@ const sendCommand = (command) => {
         window.addEventListener("keydown", handleDirectionChange);
 
         return () => {
+            clearInterval(interval); // Turn off continuation of telemetry
             window.removeEventListener("keydown", handleDirectionChange);
         };
 
@@ -66,12 +101,12 @@ const sendCommand = (command) => {
 
                 <div className='info-container'>
                     <span className='info-label'> Elapsed Time: </span>
-                    <span className='info-value'> { trashCrabData.elapsedTime } </span>
+                    <span className='info-value'> { telemetry.elapsedTime } </span>
                 </div>
 
                 <div className='info-container'>
                     <span className='info-label'> ETA Completion: </span>
-                    <span className='info-value'> { trashCrabData.etaCompletion } </span>
+                    <span className='info-value'> { telemetry.etaCompletion } </span>
                 </div>
             </div>
 
@@ -87,41 +122,41 @@ const sendCommand = (command) => {
                         <span className='info-label'> 
                             <img src={ Battery } alt='Battery Icon' /> Battery
                         </span>
-                        <span className='info-value'> { trashCrabData.battery } % </span>
+                        <span className='info-value'> { telemetry.battery } % </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'>
                             <img src={ Speed } alt='Speed Icon' /> Speed 
                         </span>
-                        <span className='info-value'> { trashCrabData.speed } m/s </span>
+                        <span className='info-value'> { telemetry.speed } m/s </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'> 
                             <img src={ Trash } alt='Trash Icon' /> Trash Collected 
                         </span>
-                        <span className='info-value'> { trashCrabData.trashCollected } items </span>
+                        <span className='info-value'> { telemetry.trashCollected } items </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'>
                             <img src={ Water } alt='Water Icon' /> Water Tempuature
                         </span>
-                        <span className='info-value'> { trashCrabData.waterTemperature } F </span>
+                        <span className='info-value'> { telemetry.waterTemperature } F </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'> 
                             <img src={ Address } alt='GPS Icon' /> GPS
                         </span>
-                        <span className='info-value'> ( { trashCrabData.gps.latitude } , { trashCrabData.gps.longitude } ) </span>
+                        <span className='info-value'> ( { telemetry.gps.latitude } , { telemetry.gps.longitude } ) </span>
                     </div>
 
                     <div className='progress-container'>
                         <span className='info-label'> Progress Meter </span>
                         <div className='progress-bar'>
-                            <ProgressMeter color='#183A49' progress={ trashCrabData.progressMeter } />  
+                            <ProgressMeter color='#183A49' progress={ telemetry.progressMeter } />  
                         </div>    
                     </div>
                     
