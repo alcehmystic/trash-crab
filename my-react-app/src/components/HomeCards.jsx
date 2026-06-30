@@ -93,11 +93,11 @@ const HomeCards = () => {
         <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton isOnline={false} />}>
             <div className='controls-widget'>
                 <div className='search-buttons'>
-                    <button className='start-search'> Start Search </button>
-                    <button className='stop-search'> Stop Search </button>
+                    <button className='start-search' onClick={() => sendCommand("start-search")}> Start Search </button>
+                    <button className='stop-search' onClick={() => sendCommand("stop-search")}> Stop Search </button>
                 </div>
 
-                <button className='return-dock'> Return to Dock </button>
+                <button className='return-dock' onClick={() => sendCommand("return-dock")}> Return to Dock </button>
 
                 <div className='info-container'>
                     <span className='info-label'> Elapsed Time: </span>
