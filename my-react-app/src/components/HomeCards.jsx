@@ -48,9 +48,22 @@ const HomeCards = () => {
             console.error("Failed to get telemetry with error: ", error);
         }
     }
- 
-    const sendCommand = (command) => {
-            console.log("Sending command:", command);
+    
+    // Function sends request to backend -> telecom -> Pi
+    const sendCommand = async (command) => {
+        try{
+            const response = await fetch(`http://localhost:5001/command/${command}`, {
+                method: "POST"
+            });
+        
+            const data = await response.json();
+            console.log("Command Request:", data);
+        }
+        
+        catch(error){
+            console.error("Failed to send command: ", error);
+        }
+               
     }; 
 
     useEffect(() => {
@@ -88,13 +101,14 @@ const HomeCards = () => {
         };
 
     }, []);
+    
   return (
     <div className='cards-container'>
         <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton isOnline={false} />}>
             <div className='controls-widget'>
                 <div className='search-buttons'>
-                    <button className='start-search' onClick={() => sendCommand("start-search")}> Start Search </button>
-                    <button className='stop-search' onClick={() => sendCommand("stop-search")}> Stop Search </button>
+                    <button className='start-search' onClick={() => sendCommand("start")}> Start Search </button>
+                    <button className='stop-search' onClick={() => sendCommand("stop")}> Stop Search </button>
                 </div>
 
                 <button className='return-dock' onClick={() => sendCommand("return-dock")}> Return to Dock </button>
