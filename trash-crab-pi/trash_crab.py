@@ -2,7 +2,7 @@ import serial
 import threading # Allow listening + typing cmds simultaneously
 
 
-PORT = "/dev/cu.usbserial-0001"
+PORT = "COM4"
 BAUD = 57600 # Speed
 
 radio = serial.Serial(PORT, BAUD, timeout = 2)

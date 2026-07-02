@@ -4,7 +4,7 @@ import icon from '../assets/card_icons/Logo_Crab.png';
 import settingsIcon from '../assets/card_icons/Setting_Logo.png';
 import StatusButton from "./StatusButton";
 
-function Navbar({ darkMode, setDarkMode}) {
+function Navbar({ darkMode, setDarkMode, isOnline}) {
   const [open, setOpen] = useState(false)
   const toggleSettings = () => {
     setOpen(!open)
@@ -15,7 +15,7 @@ function Navbar({ darkMode, setDarkMode}) {
       <div className="navbar-left">
         <img src={icon} alt="Trash Crab Logo" className="navbar-icon" />
         <h2 className="navbar-logo">Trash Crab</h2>
-        <StatusButton isOnline={false} />
+        <StatusButton isOnline={isOnline} />
       </div>
       <div className="navbar-right">
         <button className='settings-button' onClick={ toggleSettings }>

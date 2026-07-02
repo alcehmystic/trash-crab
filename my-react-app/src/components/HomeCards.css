@@ -16,6 +16,28 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+
+    /* Fixed width so the card doesn't grow/shrink (and shift the rest of
+       the layout) as "Command Sent"/"Command Received" text length changes
+       between things like "Neutral" and "Searching (Right) (L 50% / R -50%)". */
+    width: 420px;
+}
+
+.controls-widget .info-container
+{
+    /* Labels are fixed, known-length text ("Command Sent:", etc.) - size
+       that column to fit them exactly, and let the value (which is what
+       actually changes length) take the rest of the now-fixed width and
+       wrap instead of forcing the container wider. */
+    grid-template-columns: auto 1fr;
+    column-gap: 12px;
+}
+
+.controls-widget .info-value
+{
+    overflow-wrap: break-word;
+    min-width: 0;
+    text-align: right;
 }
 
 .controls-widget button
@@ -57,17 +79,24 @@
     background-color: #a03843;
 }
 
-.return-dock
+.emergency-stop
 {
-    background-color: #5595DE;
+    background-color: #b02a2a;
     color: #fff;
     border: none;
     transition: background-color 0.2s ease;
+    width: 100%;
 }
 
-.return-dock:hover 
+.emergency-stop:hover
 {
-    background-color: #599ce8;
+    background-color: #c73333;
+}
+
+.controls-widget button:disabled
+{
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .info-container
