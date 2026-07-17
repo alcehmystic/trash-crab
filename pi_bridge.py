@@ -1,8 +1,9 @@
 """
 pi_bridge.py
 ------------
-Runs on the Raspberry Pi. Bridges the long-range radio link (to the laptop)
-and the USB serial link (to the Arduino Nano motor controller).
+Runs on the Raspberry Pi. Bridges the long-range radio link (to the laptop),
+the USB serial link (to the Arduino Nano motor controller), and a USB GPS
+receiver (VK-162).
 
 Responsibilities:
   - Receive WASD control packets from the laptop over radio
@@ -11,8 +12,10 @@ Responsibilities:
   - Enforce the global speed cap here too (defense in depth)
   - Run a failsafe watchdog: if no control packet arrives in time,
     force the Arduino to stop
+  - Read NMEA sentences from the VK-162 GPS dongle and fold the latest
+    fix into telemetry
   - Keep sending telemetry back to the laptop (unchanged from the
-    original test harness)
+    original test harness, now with real GPS data)
 
 DEBUG MODE:
   If the Arduino isn't connected (or ARDUINO_PORT can't be opened), this
@@ -31,24 +34,59 @@ DEBUG MODE:
   confirm the gradual-speed-change behavior before that hardware exists.
 
 Radio protocol expected from laptop (newline terminated):
-  "ARM"                 -> arm the ESCs
-  "STOP"                -> emergency stop
-  "CTRL:<keys>"         -> currently held keys, e.g. "CTRL:wa" for
-                           forward+left, "CTRL:" (empty) when nothing is
-                           held. Uses the full MAX_SPEED_PCT cap.
-  "CTRL:<keys>:<scale>" -> same as above, but the resulting left/right
-                           target is additionally scaled by scale% (0-100)
-                           before being clamped and sent to the Arduino.
-                           Used for things like an autonomous search spin
-                           that wants less than full speed, e.g.
-                           "CTRL:d:50" turns right at half of the normal
-                           full-deflection target.
+  "ARM"          -> arm the ESCs
+  "STOP"         -> emergency stop
+  "CTRL:<keys>"  -> currently held keys, e.g. "CTRL:wa" for forward+left,
+                    "CTRL:" (empty) when nothing is held
+
+Radio messages sent back to the laptop (newline terminated):
+  {"type":"telemetry", ...}  -> once per second, boat status for the
+                                dashboard, including the latest GPS fix
+  "Pi: ..."                  -> plain-text ACKs for ARM/STOP/CTRL
+
+GPS SETUP (VK-162 USB GPS dongle):
+  The VK-162 enumerates as a USB-serial device and streams standard NMEA
+  0183 sentences at 9600 baud once it has a fix (can take up to ~30s
+  outdoors on a cold start). Parsing uses pynmea2:
+      pip install pynmea2
+  If pynmea2 isn't installed, or the device can't be opened, the GPS
+  thread logs that once and disables itself - everything else (drive,
+  telemetry, failsafe) keeps running normally.
 """
 
 import serial
+import sys
 import threading
 import time
 import json
+
+# Under systemd, stdout is block-buffered by default, so print()s (radio RX,
+# GPS status lines, etc.) don't reach `journalctl` until a full buffer
+# flushes - which makes a running script look silent. Force line buffering so
+# every line shows up in the service log immediately.
+try:
+    sys.stdout.reconfigure(line_buffering=True)
+    sys.stderr.reconfigure(line_buffering=True)
+except Exception:
+    pass
+
+# Master switch for the GPS feed. Kept as a top-level flag (same pattern used
+# elsewhere in this file for optional hardware) so it can be killed with one
+# edit + restart if the GPS dongle is ever suspected of causing trouble.
+GPS_ENABLED = True
+
+# pynmea2 only needs to exist for the GPS thread. Import defensively so a
+# missing dependency or a device hiccup never takes down the control/
+# telemetry bridge - it just means the GPS feed stays disabled.
+GPS_LIB_AVAILABLE = False
+if GPS_ENABLED:
+    try:
+        import pynmea2
+        GPS_LIB_AVAILABLE = True
+        print("[GPS] pynmea2 imported OK.")
+    except Exception as e:
+        print(f"[GPS] pynmea2 unavailable ({type(e).__name__}: {e}); "
+              "GPS feed disabled, everything else runs normally.")
 
 # Marks the moment the script itself started running, before any of the
 # (potentially slow/blocking) hardware connection attempts below. Elapsed
@@ -68,6 +106,20 @@ FAILSAFE_TIMEOUT = 1.0           # seconds without a control packet before auto-
 
 FORCE_DEBUG_MODE = False         # set True to always print instead of writing to Arduino
 
+# ---- GPS (VK-162 USB GPS dongle) config ----
+# u-blox-based dongles like the VK-162 usually enumerate with a u-blox by-id
+# name; check `ls -l /dev/serial/by-id/` on the actual Pi and update this if
+# it doesn't match (same caveat as RADIO_PORT/ARDUINO_PORT below: with three
+# USB-serial devices now plugged in, by-id names are the only ones stable
+# across reboots - /dev/ttyUSB0 / /dev/ttyACM0 can and will move around).
+GPS_PORT = "/dev/serial/by-id/usb-u-blox_AG_-_www.u-blox.com_u-blox_7_-_GPS_GNSS_Receiver-if00"
+GPS_BAUD = 9600
+GPS_RETRY_DELAY = 3.0             # seconds between reconnect attempts if the dongle isn't found
+# A GGA/RMC sentence that hasn't updated the fix in longer than this is
+# treated as stale: telemetry reports fix=False (but keeps the last known
+# lat/lon) rather than silently claiming an old fix is still current.
+GPS_STALE_TIMEOUT = 5.0
+
 # PWM constants, mirrored from motor_controller.ino, used ONLY to preview
 # what pulse width the Arduino would generate for a given target percent.
 PULSE_NEUTRAL = 1500
@@ -78,9 +130,9 @@ PULSE_REVERSE_MAX = 1000
 # drive the software ramp preview in debug mode below.
 RAMP_MS = 1500
 
-# NOTE: with both the radio adapter and the Arduino on USB, device names
-# like /dev/ttyUSB0 / /dev/ttyACM0 can swap on reboot depending on
-# enumeration order. If you see the wrong device responding, check
+# NOTE: with the radio adapter, the Arduino, and the GPS dongle all on USB,
+# device names like /dev/ttyUSB0 / /dev/ttyACM0 can swap on reboot depending
+# on enumeration order. If you see the wrong device responding, check
 # `ls -l /dev/serial/by-id/` for stable names and use those instead.
 
 def open_radio():
@@ -90,7 +142,12 @@ def open_radio():
     and for runtime reconnects after a dropped connection."""
     while True:
         try:
-            ser = serial.Serial(RADIO_PORT, RADIO_BAUD, timeout=1)
+            # write_timeout bounds every radio.write(): without it, a write to a
+            # backed-up port could block forever holding radio_lock, freezing
+            # telemetry. With it, a stuck/oversized write raises instead of
+            # hanging, and radio_write() handles it. Normal writes (telemetry
+            # ~210 B) finish in well under this.
+            ser = serial.Serial(RADIO_PORT, RADIO_BAUD, timeout=1, write_timeout=5)
             print(f"Radio connected on {RADIO_PORT}")
             return ser
         except (serial.SerialException, FileNotFoundError) as e:
@@ -145,6 +202,30 @@ sim_current_right = 0.0
 sim_target_left = 0.0
 sim_target_right = 0.0
 sim_lock = threading.Lock()
+
+# --- GPS state ---
+# Updated by gps_loop() as NMEA sentences arrive, read by get_telemetry()
+# once a second. Lat/lon (and altitude/satellites/course/speed) hold the
+# last known good values even after the fix goes stale, so the dashboard
+# can keep showing "last known position" - only `fix` flips to False.
+gps_state = {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "fix": False,
+    "satellites": 0,
+    "altitude": 0.0,
+    "speedKnots": 0.0,
+    "course": 0.0,
+    # course is GPS course-over-ground (bearing derived from movement
+    # between fixes), not a compass reading - the receiver only reports it
+    # once it has detected real movement, and RMC's true_course field comes
+    # back blank until then. courseValid tracks whether we've ever gotten a
+    # real one, so 0.0's default doesn't get mistaken by the dashboard for
+    # an actual "facing north" reading before the boat has moved.
+    "courseValid": False,
+}
+gps_last_update = 0.0    # time.time() of the last sentence that carried a valid fix
+gps_lock = threading.Lock()
 
 
 def clamp(v, lo, hi):
@@ -302,6 +383,168 @@ def arduino_reader_loop():
             print(f"[ARDUINO] {line}")
 
 
+GPS_DIAG_LOG_INTERVAL = 5.0  # seconds between GPS course/speed diagnostic lines
+_gps_diag_last_log = 0.0
+
+# Tracks every distinct NMEA sentence type seen since startup (GGA, RMC,
+# VTG, GSA, GSV, ...), logged periodically. If "RMC" and "VTG" never show
+# up here at all, the module simply isn't emitting course/track data in
+# any sentence we'd recognize - a configuration/firmware fact, not
+# something a code fix on this end can work around. If they DO show up
+# but _log_gps_diagnostic keeps reporting "blank", the sentences are
+# arriving but the course/track fields inside them are genuinely empty.
+_gps_seen_sentence_types = set()
+_gps_seen_last_log = 0.0
+
+
+def _note_sentence_type_seen(sentence):
+    """Prints the current full set on a time-based heartbeat (not only when
+    a new type first appears), so the complete list is guaranteed to show
+    up even if different sentence types trickle in slower than the
+    throttle interval."""
+    global _gps_seen_last_log
+    if not sentence:
+        return
+    _gps_seen_sentence_types.add(sentence)
+    now = time.time()
+    if now - _gps_seen_last_log < GPS_DIAG_LOG_INTERVAL:
+        return
+    _gps_seen_last_log = now
+    print(f"[GPS] Sentence types seen so far: {sorted(_gps_seen_sentence_types)}")
+
+
+def _log_gps_diagnostic(source, speed, course):
+    """Throttled heartbeat (at most once every GPS_DIAG_LOG_INTERVAL
+    seconds) showing exactly what course/speed data RMC/VTG sentences are
+    actually carrying, so this shows up in the normal `journalctl`/console
+    log without needing a live SSH session to debug course-over-ground
+    issues. course=None means the receiver reported that field blank -
+    most commonly because the module hasn't detected enough real movement
+    between fixes yet to compute a confident heading. That's expected
+    physics for a GPS-only module (no compass), not necessarily a bug -
+    but if this keeps printing "blank" while the boat is clearly moving
+    at a normal pace with a healthy fix, that points at a real problem
+    worth reporting back (e.g. this module's firmware not populating
+    course/track fields at all)."""
+    global _gps_diag_last_log
+    now = time.time()
+    if now - _gps_diag_last_log < GPS_DIAG_LOG_INTERVAL:
+        return
+    _gps_diag_last_log = now
+    course_str = f"{course:.1f}deg" if course is not None else "blank (no course yet)"
+    speed_str = f"{speed}kn" if speed is not None else "blank"
+    print(f"[GPS] {source} speed={speed_str} course={course_str}")
+
+
+def gps_loop():
+    """Continuously read NMEA sentences from the VK-162 and update
+    gps_state. Runs entirely independently of the radio/Arduino links - a
+    disconnected or fixless GPS dongle never blocks or interferes with
+    drive/telemetry, it just leaves gps_state at its last known values.
+
+    GGA sentences supply fix quality, satellite count, and altitude. RMC
+    and VTG both independently supply ground speed and course-over-ground -
+    parsing both means a module that only reliably populates one of them
+    still gets picked up. RMC can also update latitude/longitude, so it
+    can refresh gps_last_update and, in turn, how fresh the dashboard
+    considers the fix (VTG carries no position, only speed/track)."""
+    global gps_last_update
+
+    gps_serial = None
+    while True:
+        if gps_serial is None:
+            try:
+                gps_serial = serial.Serial(GPS_PORT, GPS_BAUD, timeout=1)
+                print(f"[GPS] Connected on {GPS_PORT}")
+            except (serial.SerialException, FileNotFoundError) as e:
+                print(f"[GPS] Could not open {GPS_PORT} ({e}). Retrying in "
+                      f"{GPS_RETRY_DELAY}s...")
+                time.sleep(GPS_RETRY_DELAY)
+                continue
+
+        try:
+            raw = gps_serial.readline().decode("ascii", errors="ignore").strip()
+        except (serial.SerialException, OSError) as e:
+            print(f"[GPS] Read error ({e}). Reconnecting...")
+            try:
+                gps_serial.close()
+            except Exception:
+                pass
+            gps_serial = None
+            time.sleep(GPS_RETRY_DELAY)
+            continue
+
+        if not raw.startswith("$"):
+            continue  # partial line from mid-stream connect, or noise
+
+        try:
+            msg = pynmea2.parse(raw)
+        except pynmea2.ParseError:
+            continue  # a dropped/garbled byte mid-sentence - just skip it
+
+        sentence = getattr(msg, "sentence_type", "")
+        _note_sentence_type_seen(sentence)
+
+        if sentence == "GGA":
+            # gps_qual: 0 = no fix, 1 = GPS fix, 2 = DGPS fix, etc.
+            try:
+                fix_quality = int(msg.gps_qual)
+            except (TypeError, ValueError):
+                fix_quality = 0
+            with gps_lock:
+                try:
+                    gps_state["satellites"] = int(msg.num_sats)
+                except (TypeError, ValueError):
+                    pass
+                try:
+                    gps_state["altitude"] = float(msg.altitude)
+                except (TypeError, ValueError):
+                    pass
+                if fix_quality > 0:
+                    gps_state["latitude"] = msg.latitude
+                    gps_state["longitude"] = msg.longitude
+                    gps_state["fix"] = True
+                    gps_last_update = time.time()
+                else:
+                    gps_state["fix"] = False
+
+        elif sentence == "RMC":
+            valid = (msg.status == "A")  # 'A' = active/valid, 'V' = void
+            with gps_lock:
+                try:
+                    gps_state["speedKnots"] = float(msg.spd_over_grnd)
+                except (TypeError, ValueError):
+                    pass
+                try:
+                    gps_state["course"] = float(msg.true_course)
+                    gps_state["courseValid"] = True
+                except (TypeError, ValueError):
+                    pass
+                if valid:
+                    gps_state["latitude"] = msg.latitude
+                    gps_state["longitude"] = msg.longitude
+                    gps_state["fix"] = True
+                    gps_last_update = time.time()
+            _log_gps_diagnostic("RMC", msg.spd_over_grnd, msg.true_course)
+
+        elif sentence == "VTG":
+            # Independent of RMC - some receivers/firmwares populate this
+            # sentence's course/speed more reliably than RMC's, so this is
+            # a second chance at real course-over-ground data rather than
+            # a strict requirement that RMC be the one that works.
+            with gps_lock:
+                try:
+                    gps_state["speedKnots"] = float(msg.spd_over_grnd_kts)
+                except (TypeError, ValueError):
+                    pass
+                try:
+                    gps_state["course"] = float(msg.true_track)
+                    gps_state["courseValid"] = True
+                except (TypeError, ValueError):
+                    pass
+            _log_gps_diagnostic("VTG", msg.spd_over_grnd_kts, msg.true_track)
+
+
 def reconnect_radio():
     """Close and reopen the radio serial port after a runtime failure,
     reusing the same retrying open_radio() logic used at startup. Holds
@@ -322,8 +565,8 @@ def radio_write(data: bytes):
     """Write to the radio link, reconnecting automatically on failure
     instead of letting the exception propagate and crash the process.
     Serialized via radio_lock so telemetry_loop()'s periodic send and
-    main()'s CTRL/ARM/STOP acks - running on separate threads - can never
-    land on the wire at the same time."""
+    main()'s CTRL/ARM/STOP acks - on separate threads - can never land on
+    the wire at the same time."""
     with radio_lock:
         try:
             radio.write(data)
@@ -338,17 +581,30 @@ def radio_write(data: bytes):
 
 def get_telemetry():
     elapsed_seconds = time.time() - SCRIPT_START_TIME
+
+    with gps_lock:
+        gps_snapshot = dict(gps_state)
+        stale = (time.time() - gps_last_update) > GPS_STALE_TIMEOUT
+    if stale:
+        # Keep the last known lat/lon/etc. for the dashboard's "last known
+        # position", but don't claim the fix is still current.
+        gps_snapshot["fix"] = False
+
     return {
         "type": "telemetry",
         "elapsedTime": format_elapsed_time(elapsed_seconds),
         "etaCompletion": "00:41:15",
-        "speed": 0.3,
-        "trashCollected": 100,
-        "gps": {
-            "latitude": 33.7756,
-            "longitude": -84.3963
-        },
-        "progressMeter": 56,
+        # battery/speed/trashCollected/waterTemperature are None: no sensor
+        # for any of these is wired up yet, and the dashboard shows "No
+        # Sensor Added" for a None value rather than a fake reading. Swap a
+        # real number in here once the corresponding sensor exists on the
+        # Pi and the dashboard picks it up automatically.
+        "battery": None,
+        "speed": None,
+        "trashCollected": None,
+        "waterTemperature": None,
+        "gps": gps_snapshot,
+        "progressMeter": 0,
         "state": "RUNNING"
     }
 
@@ -393,6 +649,11 @@ def main():
     else:
         threading.Thread(target=ramp_simulator_loop, daemon=True).start()
 
+    # GPS feed is optional: only starts if pynmea2 imported and the feature
+    # is enabled. Everything above still runs without it.
+    if GPS_ENABLED and GPS_LIB_AVAILABLE:
+        threading.Thread(target=gps_loop, daemon=True).start()
+
     while True:
         # Snapshot the current radio object under the lock, then read
         # outside it - readline() blocks for up to 1s (its timeout), and
@@ -425,24 +686,8 @@ def main():
             radio_write(b"Pi: ARM received\n")
 
         elif line.startswith("CTRL:"):
-            payload = line[len("CTRL:"):]
-            # Optional "<keys>:<scale>" suffix (e.g. "d:50" for a half-speed
-            # search spin) - rpartition so a bare "CTRL:wa" with no scale
-            # (the normal WASD case) still parses correctly, since it has no
-            # colon and falls through to the 100% default below.
-            keys_part, sep, scale_part = payload.rpartition(":")
-            if sep and scale_part.lstrip("-").isdigit():
-                keys_str = keys_part
-                scale_pct = clamp(int(scale_part), 0, 100)
-            else:
-                keys_str = payload
-                scale_pct = 100
-
-            keys = set(keys_str.lower())
+            keys = set(line[len("CTRL:"):].lower())
             left, right = wasd_to_diff(keys)
-            scale = scale_pct / 100.0
-            left = round(left * scale)
-            right = round(right * scale)
             cmd = f"T:{left},{right}"
 
             print_ctrl_debug(keys, left, right, cmd)

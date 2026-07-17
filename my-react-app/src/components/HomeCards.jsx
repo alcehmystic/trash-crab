@@ -1,7 +1,6 @@
 import Card from './Card';
 import React, { useEffect, useRef, useState } from 'react';
 import Joystick from '../assets/card_icons/Joystick.png';
-import Videocall from '../assets/card_icons/Video_call.png';
 import Live from '../assets/card_icons/Live.png';
 import World from '../assets/card_icons/World_location.png';
 import Battery from '../assets/card_icons/Full_battery.png';
@@ -42,24 +41,13 @@ const TELECOM_BASE_URL = "http://127.0.0.1:5001";
 const SEARCH_SPIN_KEY = "d";
 const SEARCH_SPEED_PCT = 50;
 
-const parseHmsToSeconds = (hms) => {
-    const parts = String(hms).split(":").map(Number);
-    if (parts.length !== 3 || parts.some(Number.isNaN)) return 0;
-    const [hours, minutes, seconds] = parts;
-    return hours * 3600 + minutes * 60 + seconds;
-};
-
-// Progress is elapsed time as a percentage of (elapsed + ETA remaining),
-// rather than a value the Pi sends directly - etaCompletion is a countdown
-// of time remaining, not a fixed total, so this recomputes on every
-// telemetry poll as that countdown changes.
-const computeProgressPercent = (elapsedTime, etaCompletion) => {
-    const elapsedSeconds = parseHmsToSeconds(elapsedTime);
-    const etaSeconds = parseHmsToSeconds(etaCompletion);
-    const totalSeconds = elapsedSeconds + etaSeconds;
-    if (totalSeconds <= 0) return 0;
-    return Math.round((elapsedSeconds / totalSeconds) * 100);
-};
+// No sensor hardware is wired up for these yet (battery, speed, trash
+// count, water temp) - the Pi sends them as null placeholders so the
+// dashboard can tell "not installed" apart from a real zero reading.
+// Anyone adding the actual sensor just has pi_bridge.py report a number
+// instead of null and this starts showing real values automatically.
+const formatSensor = (value, suffix) =>
+    value === null || value === undefined ? "No Sensor Added" : `${value} ${suffix}`;
 
 // Client-side estimate of differential-drive thruster mixing, purely to
 // visualize intent in the dashboard - the Pi is the source of truth for
@@ -105,13 +93,19 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
     const [telemetry, setTelemetry] = useState({
         elapsedTime: "00:00:00",
         etaCompletion: "00:00:00",
-        battery: 0,
-        speed: 0,
-        trashCollected: 0,
-        waterTemperature: 0,
+        battery: null,
+        speed: null,
+        trashCollected: null,
+        waterTemperature: null,
         gps: {
             latitude: 0,
-            longitude: 0
+            longitude: 0,
+            fix: false,
+            satellites: 0,
+            altitude: 0,
+            speedKnots: 0,
+            course: 0,
+            courseValid: false
         },
         progressMeter: 0,
         state: "NO DATA"
@@ -321,6 +315,15 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
         ? Math.max(0, now / 1000 - lastContactAt)
         : null;
 
+    // Seconds since the last telemetry packet with a valid GPS fix, ticking
+    // smoothly via `now` the same way secondsSinceLastReply does above.
+    // linkStatus.lastGpsFixAt is stamped with the telecom server's own
+    // clock (see telecom-server.py), not the Pi's, so this never depends on
+    // the two machines' clocks being in sync.
+    const secondsSinceGpsFix = linkStatus.lastGpsFixAt
+        ? Math.max(0, now / 1000 - linkStatus.lastGpsFixAt)
+        : null;
+
     // The top navbar badge is a plain online/offline read on the whole bot.
     // This one instead shows the Controls card's own mode - searching vs.
     // tele-op - but falls back to "Offline" whenever the bot itself is
@@ -332,7 +335,7 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
 
   return (
     <div className='cards-container'>
-        <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton variant={controlsStatusVariant} label={controlsStatusLabel} />}>
+        <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton variant={controlsStatusVariant} label={controlsStatusLabel} />} className='controls-card'>
             <div className='controls-widget'>
                 <div className='search-buttons'>
                     <button className='start-search' onClick={startSearch} disabled={halted}> Start Search </button>
@@ -368,60 +371,86 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
             </div>
 
         </Card>
-        <Card title='Live Feed' icon={ Videocall } alt='Videocall Icon' statusButton={<StatusButton isOnline={false} />} >
-            <p>
-                This body will later be replaced with the Trash Crab's live feed from the camera to show what it's collecting and seeing in its view.
-            </p>
-        </Card>
-        <Card title='Live Stats' icon={ Live } alt='Live Icon'>
+        <Card title='Live Stats' icon={ Live } alt='Live Icon' className='live-stats-card'>
             <div className='livestats-widget'>
                     <div className='info-container'>
                         <span className='info-label'> 
                             <img src={ Battery } alt='Battery Icon' /> Battery
                         </span>
-                        <span className='info-value'> { telemetry.battery } % </span>
+                        <span className='info-value'> { formatSensor(telemetry.battery, "%") } </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'>
-                            <img src={ Speed } alt='Speed Icon' /> Speed 
+                            <img src={ Speed } alt='Speed Icon' /> Speed
                         </span>
-                        <span className='info-value'> { telemetry.speed } m/s </span>
+                        <span className='info-value'> { formatSensor(telemetry.speed, "m/s") } </span>
                     </div>
 
                     <div className='info-container'>
-                        <span className='info-label'> 
-                            <img src={ Trash } alt='Trash Icon' /> Trash Collected 
+                        <span className='info-label'>
+                            <img src={ Trash } alt='Trash Icon' /> Trash Collected
                         </span>
-                        <span className='info-value'> { telemetry.trashCollected } items </span>
+                        <span className='info-value'> { formatSensor(telemetry.trashCollected, "items") } </span>
                     </div>
 
                     <div className='info-container'>
                         <span className='info-label'>
                             <img src={ Water } alt='Water Icon' /> Water Tempuature
                         </span>
-                        <span className='info-value'> { telemetry.waterTemperature } F </span>
-                    </div>
-
-                    <div className='info-container'>
-                        <span className='info-label'> 
-                            <img src={ Address } alt='GPS Icon' /> GPS
-                        </span>
-                        <span className='info-value'> ( { telemetry.gps.latitude } , { telemetry.gps.longitude } ) </span>
+                        <span className='info-value'> { formatSensor(telemetry.waterTemperature, "F") } </span>
                     </div>
 
                     <div className='progress-container'>
                         <span className='info-label'> Progress Meter </span>
                         <div className='progress-bar'>
-                            <ProgressMeter color='#183A49' progress={ computeProgressPercent(telemetry.elapsedTime, telemetry.etaCompletion) } />
+                            <ProgressMeter color='#183A49' progress={ telemetry.progressMeter } />
                         </div>
                     </div>
                     
             </div>
         </Card>
-        <Card title='Map View' icon={ World } alt='World Icon'>
-            <div className='map-container'>
-                <MapDisplay/>
+        <Card title='Map View' icon={ World } alt='World Icon' className='map-view-card'>
+            <div className='map-widget'>
+                <div className='map-info-row'>
+                    <div className='info-container'>
+                        <span className='info-label'>
+                            <img src={ Address } alt='GPS Icon' /> Coordinates
+                        </span>
+                        {/* Fixed decimal precision (~11cm resolution) so the
+                            digit count - and therefore this container's width -
+                            stays constant as fixes come in, instead of jittering
+                            the layout the way raw floats did. */}
+                        <span className='info-value'>
+                            { secondsSinceGpsFix === null
+                                ? "No fix yet"
+                                : `( ${telemetry.gps.latitude.toFixed(6)} , ${telemetry.gps.longitude.toFixed(6)} )` }
+                        </span>
+                    </div>
+
+                    <div className='info-container'>
+                        <span className='info-label'> Location Last Received: </span>
+                        <span className='info-value'>
+                            { secondsSinceGpsFix === null
+                                ? "No fix yet"
+                                : `${secondsSinceGpsFix.toFixed(1)} Second(s) ago` }
+                        </span>
+                    </div>
+                </div>
+
+                <div className='map-container'>
+                    <MapDisplay
+                        // Only pass a position once a real fix has ever been
+                        // received (tracked via secondsSinceGpsFix, which is
+                        // null until linkStatus.lastGpsFixAt is set) - before
+                        // that, telemetry.gps is just the zeroed placeholder
+                        // shape and plotting it would drop a marker at (0,0).
+                        position={ secondsSinceGpsFix !== null ? telemetry.gps : null }
+                        hasFix={ telemetry.gps.fix }
+                        course={ telemetry.gps.course }
+                        courseValid={ telemetry.gps.courseValid }
+                    />
+                </div>
             </div>
         </Card>
         

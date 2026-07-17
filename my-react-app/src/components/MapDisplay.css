@@ -1,0 +1,126 @@
+.map-wrapper
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.map-wrapper .maplibregl-map
+{
+    border-radius: 10px;
+}
+
+/* Stacks the "Trash Crab" label above the heading icon. Centered so the
+   label stays horizontally aligned with the icon regardless of label
+   text width. */
+.gps-marker-wrapper
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.gps-marker-label
+{
+    background-color: #183A49;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.35);
+}
+
+/* Groups the forward-direction arrow directly above the triangle, with no
+   gap, so the arrow reads as protruding from the icon's tip rather than as
+   a separate floating element. */
+.gps-marker-icon
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gps-marker-arrow
+{
+    color: #2e8b57;
+    margin-bottom: -2px; /* tuck the arrow's base into the triangle's tip */
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+
+.gps-marker-arrow line,
+.gps-marker-arrow path
+{
+    stroke: currentColor;
+}
+
+.gps-marker-arrow-stale
+{
+    color: #8a8f94;
+    opacity: 0.6;
+}
+
+/* Heading-aware boat marker: a triangle pointing "up" at rotation 0, which
+   the Marker's `rotation` prop then rotates to match GPS course-over-ground
+   (rotationAlignment='map' keeps it pinned to true heading regardless of
+   how the map itself is panned/rotated). */
+.gps-marker
+{
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 18px solid #2e8b57;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* No current fix - still shows the last known position, just dimmed so it
+   reads as stale rather than live. */
+.gps-marker-stale
+{
+    border-bottom-color: #8a8f94;
+    opacity: 0.6;
+}
+
+/* Neutral, non-directional marker shown before a real course-over-ground
+   reading exists (the boat hasn't moved yet since acquiring a fix) - a
+   plain dot avoids implying a heading that isn't real data. */
+.gps-marker-dot
+{
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #2e8b57;
+    border: 2px solid #fff;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.gps-marker-dot-stale
+{
+    background-color: #8a8f94;
+    opacity: 0.6;
+}
+
+.recenter-btn
+{
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    z-index: 1;
+
+    background-color: #264151;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+}
+
+.recenter-btn:hover
+{
+    background-color: #325266;
+}

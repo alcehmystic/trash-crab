@@ -14,14 +14,19 @@ Endpoints:
                              dashboard already initializes with, so it's
                              safe to render before the first packet arrives.
   GET  /status           -> {lastCommandSent, lastCommandAt, lastAck,
-                             lastAckAt, lastTelemetryAt, connected} - lets
-                             the dashboard show what was sent next to what
-                             the Pi actually echoed back, to check the
-                             link's integrity. lastTelemetryAt is included
-                             too so "time since last contact" reflects any
-                             traffic from the Pi, not just command acks -
-                             telemetry keeps arriving once a second even
-                             when nothing is being driven.
+                             lastAckAt, lastTelemetryAt, lastGpsFixAt,
+                             connected} - lets the dashboard show what was
+                             sent next to what the Pi actually echoed back,
+                             to check the link's integrity. lastTelemetryAt
+                             is included too so "time since last contact"
+                             reflects any traffic from the Pi, not just
+                             command acks - telemetry keeps arriving once a
+                             second even when nothing is being driven.
+                             lastGpsFixAt is stamped with THIS machine's
+                             clock the moment a telemetry packet reports
+                             gps.fix=true, so the dashboard's "location last
+                             received Xs ago" never depends on the Pi's
+                             clock being in sync with the browser's.
   POST /command/arm      -> send ARM
   POST /command/stop     -> send STOP
   POST /command/ctrl     -> body: {"keys": "wa", "scale": 100} - currently
@@ -51,7 +56,7 @@ import time
 import json
 import logging
 
-PORT = "COM4"
+PORT = "COM3"
 BAUD = 57600
 RECONNECT_DELAY = 2  # seconds between attempts to (re)open the radio port
 
@@ -103,15 +108,29 @@ def connect_radio_loop():
 latest_telemetry = {
     "elapsedTime": "00:00:00",
     "etaCompletion": "00:00:00",
-    "battery": 0,
-    "speed": 0,
-    "trashCollected": 0,
-    "waterTemperature": 0,
-    "gps": {"latitude": 0, "longitude": 0},
+    # None, not 0 - matches pi_bridge.py's placeholder shape so the
+    # dashboard shows "No Sensor Added" instead of a fake reading before any
+    # of these sensors exist.
+    "battery": None,
+    "speed": None,
+    "trashCollected": None,
+    "waterTemperature": None,
+    "gps": {
+        "latitude": 0,
+        "longitude": 0,
+        "fix": False,
+        "satellites": 0,
+        "altitude": 0,
+        "speedKnots": 0,
+        "course": 0,
+        "courseValid": False,
+    },
     "progressMeter": 0,
     "state": "NO DATA"
 }
 last_telemetry_at = None  # epoch seconds of the last telemetry packet received
+last_gps_fix_at = None    # epoch seconds (THIS machine's clock) of the last
+                           # telemetry packet whose gps.fix was true
 telemetry_lock = threading.Lock()
 
 # What we last sent vs. the last plain-text line the Pi sent back (ARM/STOP/
@@ -142,7 +161,7 @@ def radio_reader_loop():
     """Continuously read from the radio and cache the latest telemetry
     packet, so GET /telemetry can respond instantly instead of blocking on
     the serial link for every dashboard poll."""
-    global latest_telemetry, last_telemetry_at
+    global latest_telemetry, last_telemetry_at, last_gps_fix_at
     while True:
         with radio_lock:
             active = radio
@@ -166,6 +185,8 @@ def radio_reader_loop():
                 with telemetry_lock:
                     latest_telemetry = data
                     last_telemetry_at = time.time()
+                    if data.get("gps", {}).get("fix"):
+                        last_gps_fix_at = last_telemetry_at
         except json.JSONDecodeError:
             # Non-JSON lines are ARM/STOP/CTRL acks or other plain-text replies
             if VERBOSE_ACK_LOGGING:
@@ -189,6 +210,7 @@ def get_status():
         status = dict(command_status)
     with telemetry_lock:
         status["lastTelemetryAt"] = last_telemetry_at
+        status["lastGpsFixAt"] = last_gps_fix_at
     status["connected"] = connected
     return jsonify(status)
 

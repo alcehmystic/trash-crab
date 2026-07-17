@@ -2,9 +2,9 @@ import React from 'react'
 import './Card.css'
 
 
-const Card = ({ icon, title, statusButton, children}) => {
+const Card = ({ icon, title, statusButton, children, className }) => {
   return (
-    <div className='card'>
+    <div className={`card${className ? ` ${className}` : ''}`}>
         <div className='card-header'>
             <h2 className='card-title'>
                 <img src={icon} alt="icon" /> {title}
