@@ -17,7 +17,6 @@ import './HomeCards.css';
 
 import MapDisplay from './MapDisplay.jsx'
 
-import { trashCrabData } from "../test/testData";
 
 // How often the currently-held WASD keys are re-sent to the Pi as a
 // heartbeat. Matches the interval laptop_controller.py used - comfortably
