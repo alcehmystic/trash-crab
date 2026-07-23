@@ -332,6 +332,7 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
     const controlsStatusVariant = halted ? "stopped" : (!isOnline ? "offline" : (searchMode ? "searching" : "teleop"));
     const controlsStatusLabel = halted ? "Stopped" : (!isOnline ? "Offline" : (searchMode ? "Searching" : "Tele-Op"));
 
+  // The main display showing the cards and corresponding boxes for data
   return (
     <div className='cards-container'>
         <Card title='Controls' icon={ Joystick } alt='Joystick Icon' statusButton={<StatusButton variant={controlsStatusVariant} label={controlsStatusLabel} />} className='controls-card'>
@@ -370,6 +371,7 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
             </div>
 
         </Card>
+    
         <Card title='Live Stats' icon={ Live } alt='Live Icon' className='live-stats-card'>
             <div className='livestats-widget'>
                     <div className='info-container'>
@@ -409,6 +411,7 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
                     
             </div>
         </Card>
+
         <Card title='Map View' icon={ World } alt='World Icon' className='map-view-card'>
             <div className='map-widget'>
                 <div className='map-info-row'>
@@ -455,7 +458,6 @@ const HomeCards = ({ linkStatus, now, isOnline, lastContactAt }) => {
         
     </div>
       
-
   )
 }
 
