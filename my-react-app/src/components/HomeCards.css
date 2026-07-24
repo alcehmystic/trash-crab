@@ -80,9 +80,6 @@
 
 .search-buttons button
 {
-    /* flex-basis 0 splits the row strictly by available space, ignoring
-       "Start Search" vs "Stop Search" having different label lengths, so
-       both buttons come out exactly equal width. */
     flex: 1 1 0;
 }
 
@@ -185,21 +182,9 @@
 
 .map-view-card
 {
-    /* Occupies the "map" area, which spans both rows on the right - so it
-       fills all the remaining width and stretches down to match the full
-       height of the Controls+Live Stats stack on the left. */
     grid-area: map;
-
-    /* Card.css sets width/height: fit-content on every card, which shrinks
-       it to its content and overrides the grid's default item-stretch
-       behavior - without this override the card ignores the spanned area
-       above and stays only as big as the map's own content needs. */
     width: auto;
     height: auto;
-
-    /* Makes card-header (the title bar) and map-widget (below) stack with
-       map-widget filling all the leftover height - see flex: 1 on
-       .map-widget below. */
     display: flex;
     flex-direction: column;
 }
@@ -210,10 +195,6 @@
     flex-direction: column;
     gap: 12px;
 
-    /* Grows to fill whatever height .map-view-card ends up stretched to
-       (i.e. the full height of the Controls+Live Stats column), instead of
-       staying at its own content's natural height. min-height: 0 lets it
-       actually shrink/fit within that flex parent rather than overflowing. */
     flex: 1;
     min-height: 0;
 }
@@ -226,9 +207,6 @@
 
 .map-info-row .info-container
 {
-    /* flex-basis 0 splits the row strictly by available space rather than
-       by content, so the GPS coordinate string's length (which changes as
-       fixes come in) can't shift this row's layout. */
     flex: 1 1 0;
     min-width: 0;
 }
@@ -238,10 +216,6 @@
     width: 100%;
     border-radius: 10px;
 
-    /* Grows to fill whatever's left in map-widget below the info row,
-       instead of a fixed height - min-height keeps it usable even if the
-       left column is short (e.g. before Controls/Live Stats have much
-       content). */
     flex: 1;
     min-height: 400px;
 }

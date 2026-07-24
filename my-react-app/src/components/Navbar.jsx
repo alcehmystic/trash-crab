@@ -4,6 +4,7 @@ import icon from '../assets/card_icons/Logo_Crab.png';
 import settingsIcon from '../assets/card_icons/Setting_Logo.png';
 import StatusButton from "./StatusButton";
 
+// Navigation bar at the top of the user interface displaying online status, main logo, and color preference
 function Navbar({ darkMode, setDarkMode, isOnline}) {
   const [open, setOpen] = useState(false)
   const toggleSettings = () => {
@@ -17,6 +18,7 @@ function Navbar({ darkMode, setDarkMode, isOnline}) {
         <h2 className="navbar-logo">Trash Crab</h2>
         <StatusButton isOnline={isOnline} />
       </div>
+
       <div className="navbar-right">
         <button className='settings-button' onClick={ toggleSettings }>
           <img src={ settingsIcon } alt="Settings Icon" className="settings-icon" />
@@ -35,8 +37,8 @@ function Navbar({ darkMode, setDarkMode, isOnline}) {
               </label>
             </div>
           )}
-
       </div>
+      
     </nav>
   );
 };
