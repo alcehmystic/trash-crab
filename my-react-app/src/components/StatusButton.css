@@ -1,0 +1,57 @@
+.status-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 10px;
+  width: 150px;
+  height: 15px;
+  border-radius: 21px;
+  font-weight: bold;
+  font-size: 17px;
+  color: white;
+  width: fit-content;
+  border-color: #fff;
+}
+
+.status-btn.online {
+  background: #1D3340;
+}
+
+.status-btn.offline {
+  background: #1D3340;
+}
+
+.status-btn.teleop {
+  background: #1D3340;
+}
+
+.status-btn.searching {
+  background: #1D3340;
+}
+
+.status-btn.stopped {
+  background: #1D3340;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-btn.online .status-dot,
+.status-btn.teleop .status-dot {
+  background-color: #7bd87b;
+}
+
+.status-btn.offline .status-dot {
+  background-color: #e57373;
+}
+
+.status-btn.searching .status-dot {
+  background-color: #f0ad4e;
+}
+
+.status-btn.stopped .status-dot {
+  background-color: #b02a2a;
+}

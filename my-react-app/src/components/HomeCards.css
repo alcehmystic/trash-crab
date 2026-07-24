@@ -1,0 +1,226 @@
+.cards-container
+{
+    display: grid;
+    /* Left column sizes to whichever of Controls/Live Stats is wider;
+       the map takes all remaining width. */
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "controls map"
+        "stats    map";
+    gap: clamp(1rem, 1vw, 2rem);
+
+    width: min(100%, 1500px);
+    margin: 0 auto;
+
+    padding: 0 clamp(1rem, 2vw, 2rem);
+    box-sizing: border-box;
+}
+
+.controls-card
+{
+    grid-area: controls;
+}
+
+.live-stats-card
+{
+    /* Directly under Controls in the same (left) column. */
+    grid-area: stats;
+
+    /* Card.css sets width: fit-content, which shrinks the card to its own
+       (narrower) content and blocks the grid's default item-stretch
+       behavior - Live Stats then stops short of Controls' width, leaving
+       unfilled space before the gap to Map View. Controls happens to
+       already be the widest thing in this column so it fills the column
+       "for free"; this override makes Live Stats stretch to match it the
+       same way. */
+    width: auto;
+}
+
+.controls-widget
+{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    /* Fixed width so the card doesn't grow/shrink (and shift the rest of
+       the layout) as "Command Sent"/"Command Received" text length changes
+       between things like "Neutral" and "Searching (Right) (L 50% / R -50%)". */
+    width: 420px;
+}
+
+.controls-widget .info-container
+{
+    /* Labels are fixed, known-length text ("Command Sent:", etc.) - size
+       that column to fit them exactly, and let the value (which is what
+       actually changes length) take the rest of the now-fixed width and
+       wrap instead of forcing the container wider. */
+    grid-template-columns: auto 1fr;
+    column-gap: 12px;
+}
+
+.controls-widget .info-value
+{
+    overflow-wrap: break-word;
+    min-width: 0;
+    text-align: right;
+}
+
+.controls-widget button
+{
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    padding: 12px 34.5px;
+    border-radius: 10px;
+}
+
+.search-buttons
+{
+    display: flex;
+    gap: 12px;
+}
+
+.search-buttons button
+{
+    flex: 1 1 0;
+}
+
+.start-search
+{
+    background-color: #519848;
+    color: #fff;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.start-search:hover 
+{
+    background-color: #5ba551;
+}
+
+.stop-search
+{
+    background-color: #8D3039;
+    color: #fff;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.stop-search:hover 
+{
+    background-color: #a03843;
+}
+
+.emergency-stop
+{
+    background-color: #b02a2a;
+    color: #fff;
+    border: none;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.emergency-stop:hover
+{
+    background-color: #c73333;
+}
+
+.controls-widget button:disabled
+{
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.info-container
+{
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    padding: 12px 12px;
+    border-radius: 10px;
+    background-color: #264151;
+
+    display: grid;
+    grid-template-columns: 1fr auto; /* Label + content*/
+    align-items: center;
+    column-gap: 66px;   
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.info-label
+{
+    display: inline-flex;
+    align-items: center; 
+}
+
+.info-label img
+{
+    margin-left: -13px;  
+    margin-right: 2px;  
+}
+
+.livestats-widget
+{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.progress-container
+{
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    padding: 12px 16px;
+    border-radius: 10px;
+    background-color: #264151;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr auto; /* Label + content*/
+}
+
+.progress-bar
+{
+    display: grid;
+    grid-template-columns: 160px 1fr;
+}
+
+.map-view-card
+{
+    grid-area: map;
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-widget
+{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    flex: 1;
+    min-height: 0;
+}
+
+.map-info-row
+{
+    display: flex;
+    gap: 12px;
+}
+
+.map-info-row .info-container
+{
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.map-container
+{
+    width: 100%;
+    border-radius: 10px;
+
+    flex: 1;
+    min-height: 400px;
+}
+
+
+
+
+  

@@ -1,0 +1,130 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--navbar-color);
+    color: var(--text-color);
+    padding: 10px 20px;
+    width: 100vw;
+    height: 50px;
+    box-sizing: border-box;
+}
+
+.navbar-logo {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.navbar-logo {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+.navbar-icon {
+    display: block;
+    width: 120px;
+    height: auto;
+    margin-right: -20px;
+    margin-left: -35px;
+    padding-left: 0px;
+}
+
+.navbar-toggle {
+    background-color: #1D3340;
+    color: #fff;
+    height: 30px;
+    width: 100px;
+    border-radius: 20px;
+    text-align: center;
+    /*font-size: 1em;*/
+    cursor: pointer;
+}
+
+.settings-icon {
+    width: 30px;
+    height: auto;
+    cursor: pointer;
+    padding-right: 10px;
+}
+
+.settings-button{
+    background: none;
+
+}
+
+.navbar-toggle p{
+    padding-bottom: 20px;
+    
+}
+
+.settings-menu{
+    position: absolute;
+    background-color: var(--navbar_setting-color);
+    border-radius: 10px;
+    top: 45px;
+    transform: translateX(-112px);
+    padding: 10px 12px;
+    width: 175px;
+
+}
+
+.display-toggle
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.display-toggle input
+{
+    display: none;
+}
+
+.display-bar
+{
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: #1c4e6fa1;
+    border-radius: 16px;
+    transition: background-color 0.25s ease;
+}
+
+.display-bar::before
+{
+    content: "☀️";
+    text-align: center;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background-color: #448799;
+    transition: transform 0.25s ease;
+}
+
+.display-toggle input:checked +.display-bar::before
+{
+    content: "🌙";
+    transform: translateX(29px);
+}
+
+.bar-label
+{
+    font-size: 1rem;
+    margin-left: 20px;
+}
+
