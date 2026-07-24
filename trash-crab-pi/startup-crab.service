@@ -1,0 +1,29 @@
+[Unit]
+Description=Trash Crab Motor/Telemetry Bridge (Pi <-> Radio <-> Arduino)
+
+# Runs pi-side_telecom_server.py on startup of pi to avoid delays.
+
+# Deliberately NOT tied to network-online.target — this service only needs
+# USB serial devices, not a network connection, and shouldn't wait on WiFi.
+After=multi-user.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=trash
+Group=trash
+
+# Modify to add your working directories and FILEPATH here. Default given from our setup. Yours may differ.
+WorkingDirectory=/home/trash/trash-crab/pi-api
+ExecStart=/home/trash/trash-crab/pi-api/venv/bin/python /home/trash/trash-crab/pi-api/pi-side_telecom_server.py
+
+# Always restart, no matter why it exited — a second line of defense behind
+# the in-script retry loops, not the primary fix for the boot-race issue.
+Restart=always
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

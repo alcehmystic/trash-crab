@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n vite,telecom -c blue,green \"vite\" \"python telecom-server.py\"",
+    "dev": "concurrently -n vite,telecom -c blue,green \"vite\" \"python dashboard-side_telecom_server.py\"",
     "dev:frontend": "vite",
-    "dev:telecom": "python telecom-server.py",
+    "dev:telecom": "python dashboard-side_telecom_server.py",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
