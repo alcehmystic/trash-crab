@@ -60,6 +60,9 @@ trash-crab/
 │   ├── arduino-motor-controller.ino    # Flashed onto the Arduino Nano
 │   ├── startup-crab.service            # systemd unit for launching on boot
 │   └── requirements.txt
+├── assembly/                           # Build guide and reference photos
+│   ├── ASSEMBLY.md
+│   └── photos/
 └── stl-files/                          # 3D-printable hull, basket, and mount parts
 ```
 
@@ -79,7 +82,7 @@ trash-crab/
 | Radio link | LoRa LR900-F data transmit module |
 | Vision | Luxonis OAK-D Lite (stereo camera + onboard NPU) |
 
-3D-printable parts for the hulls, collection basket, thruster mounts, and component enclosure are in [`stl-files/`](stl-files/).
+3D-printable parts for the hulls, collection basket, thruster mounts, and component enclosure are in [`stl-files/`](stl-files/). Step-by-step build instructions with photos are in the [assembly manual](assembly/ASSEMBLY.md).
 
 ## Machine learning
 
@@ -189,10 +192,11 @@ Rough parts list and cost for building your own Trash Crab. Prices are estimates
 | Compute / Control | Raspberry Pi 5 (8GB) x1, Arduino Nano x1 |
 | Sensors & Navigation | VK-162 GPS (w/ or w/o magnetometer) x1, MPU6050 IMU x3, leak sensor x4 |
 | Propulsion | 12V brushless underwater thrusters w/ESC x4 (We used DIAMONDDYNAMICS 1.2kg Thrust model) |
-| Structure & Hull | PETG filament (~9-10kg, depending on print settings), 3/4" PVC pipe for the frame (40-45 ft, cut to length), PVC fittings (8x 3-piece corner connectors, 8x 3-piece T connectors) |
-| Waterproofing | Marine silicone sealant 10oz x2 (for hulls, frame, and box) |
+| Structure & Hull | PETG filament (~9-10kg, depending on print settings), 3/4" PVC pipe for the frame (40-45 ft, cut to length), PVC fittings (3-piece corner-connectors x8, 3-piece T-connectors x12, 4-piece cross-connectors x4) |
+| Waterproofing/Glue | Marine silicone sealant 10oz x2 (for hulls, frame, and box) |
 | Power System | 12.8V 100Ah LiFePO4 battery x1 (DEASON), 20W solar panel w/charge hub x2 (SOLPERK), power distribution board x1, 12v to 5v/5A Buck Converter to USB-C x1, wiring and adapters |
 | Communications | MicoAir LoRa LR900-F radio data transmit module x1 |
+| Connections | 1/2" #10-32 non-countersunk bolts/nuts x16 |
 
 **Estimated total: $900-$1,200**, depending on part pricing and substitutions.
 
