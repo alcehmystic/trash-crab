@@ -1,0 +1,5 @@
+numpy>=1.26
+opencv-python>=4.10
+PyYAML>=6.0
+pytest>=8.2
+picamera2>=0.3.22; platform_system == "Linux" and platform_machine == "aarch64"
