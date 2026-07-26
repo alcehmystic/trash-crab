@@ -1,0 +1,19 @@
+# Python virtual environments (created anywhere in this repo)
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Node dependencies and build output (created anywhere in this repo)
+node_modules/
+dist/
+dist-ssr/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
