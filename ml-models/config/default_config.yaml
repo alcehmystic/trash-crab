@@ -1,0 +1,64 @@
+processing:
+  width: 640
+  height: 480
+  blur_kernel_size: 5
+  clahe_clip_limit: 2.0
+  clahe_tile_grid_size: 8
+  diff_threshold: 28
+  morph_open_kernel_size: 3
+  morph_close_kernel_size: 5
+  min_contour_area: 150
+  area_normalization: 0.45
+  canny_low_threshold: 60
+  canny_high_threshold: 150
+  edge_weight: 0.15
+
+estimation:
+  band_count: 5
+  band_weights: [5, 4, 3, 2, 1]
+  alpha: 0.6
+  beta: 0.4
+  empty_threshold: 0.25
+  full_threshold: 0.75
+  occupancy_threshold: 0.08
+
+smoothing:
+  enabled: true
+  window_size: 5
+  method: median
+  hysteresis_margin: 0.05
+
+mission:
+  refresh_reference_on_run: true
+  reference_frame_count: 5
+  reference_settle_frames: 2
+
+camera:
+  source: picamera2
+  processing_interval_seconds: 2.0
+  capture_resolution: [640, 480]
+  preview_resolution: [1280, 720]
+  warmup_seconds: 2.0
+  rotation: 0
+
+calibration:
+  roi_selection_mode: polygon
+  fallback_to_rectangle: true
+  save_debug_preview: true
+  manual_roi: null
+
+paths:
+  calibration_dir: data/calibration
+  empty_reference_image: data/calibration/empty_reference.jpg
+  roi_mask: data/calibration/roi_mask.png
+  calibration_data: data/calibration/calibration.json
+  debug_dir: data/debug
+
+debug:
+  enabled: false
+  save_outputs: true
+  overlay_opacity: 0.4
+
+runtime:
+  recovery_delay_seconds: 1.0
+  max_consecutive_failures: 0
