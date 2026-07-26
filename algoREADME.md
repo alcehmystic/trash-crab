@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Caddy Fullness Estimator
 
 This is the Trash Crab basket-fullness estimator. It runs on the Raspberry Pi 5, uses the inside-facing Raspberry Pi Camera Module 3 Wide, and estimates how full the basket is without using a neural network. The whole idea is to keep it lightweight, understandable, and easy to tune on the boat.
@@ -244,7 +243,3 @@ The returned result is JSON-serializable, so it is easy to hand off to a local d
 - Transparent bags, reflective trash, or debris that visually blends into the basket can make the estimate less reliable.
 - If you move the camera, change the mount height, or significantly change processing resolution, recalibrate.
 - Polygon ROI selection needs OpenCV GUI support. On a headless setup, use a manual ROI in the config or calibrate from a machine with display support.
-=======
-# trash-crab
-Computer Science Senior Design Project - Low Cost Marine "Roomba"-Style Cleanup ASV
->>>>>>> 8eb6f451286cb9789cc407af37bf9d5b3083e19f
